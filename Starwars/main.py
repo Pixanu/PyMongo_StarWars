@@ -15,7 +15,7 @@ import requests
 from pprint import pprint
 
 def add_into_database(api_starwars):
-     db["starships"].insert_many(api_starwars)
+     db["starships"].insert_many(ships_from_swapi(api_starwars))
 
 def ships_from_swapi(api_starwars):
      ships_list = []
@@ -27,8 +27,28 @@ def ships_from_swapi(api_starwars):
           # Set a new variable to go to the next page and continue
           new_page = requests.get(api_starwars["next"])
           api_starwars = new_page.json()
-         # function is not returning last page
-     # find a way to acces the last page and return the ships_list
+     # if "next" is equal to None, then loop throught the ships left and add them to the empty list
+     if api_starwars["next"] == None:
+          for each_ship in api_starwars["results"]:
+               ships_list.append(each_ship)
+     #pprint(ships_list)
+     return ships_list
+
+
+
+def get_pilots(database):
+     pilots_ = []
+     # loop through the list of pilots in the database
+     for pilot in database:
+          #for each pilot in pilots do a api requests and append it to the list
+          for each_pilot in pilot["pilots"]:
+               pilot_api = requests.get(each_pilot)
+               pilot_json = pilot_api.json()
+               pilots_.append(pilot_json)
+
+     pprint(pilots_)
+     return pilots_
+
 
 
 
@@ -38,7 +58,14 @@ db = client['starwars']
 
 swapi = requests.get("https://swapi.dev/api/starships/?page=1")
 swapi_api_ships = swapi.json()
-pprint(swapi_api_ships)
+# pprint(swapi_api_ships)
+
+add_into_database(swapi_api_ships)
+
+pilots = db.starships.find()
+
+get_pilots(pilots)
+
 
 
 # --------------------------------------------
@@ -48,4 +75,3 @@ pprint(swapi_api_ships)
 # pprint(test_page)
 
 
-#add_into_database(swapi_api_ships)
